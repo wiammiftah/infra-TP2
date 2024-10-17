@@ -1,7 +1,7 @@
 pipeline {
     environment {
         registry = "wiammiftah/tp4"
-        registryCredential = 'dockerhub'
+        registryCredential = 'docker-hub'
         dockerImage = ''
     }
     agent any
