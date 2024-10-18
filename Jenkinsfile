@@ -11,10 +11,18 @@ pipeline {
                 git 'https://github.com/wiammiftah/tp4.git'
             }
         }
-        stage('Building image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                    // Utilisation des informations d'identification pour l'authentification Docker
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'miftah', passwordVariable: 'Wiam@2001')]) {
+                        // Connexion à Docker Hub
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                        // Construction de l'image Docker
+                        sh 'docker build -t wiammiftah/tp4:$BUILD_NUMBER .'
+                        // Déconnexion de Docker Hub
+                        sh 'docker logout'
+                    }
                 }
             }
         }
