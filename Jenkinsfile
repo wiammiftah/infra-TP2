@@ -1,7 +1,7 @@
 pipeline {
     environment {
         registry = "wiammiftah/tp4"
-        registryCredential = 'docker-hub'
+        registryCredential = 'docker-hub' // Assurez-vous que 'docker-hub' est l'ID correct des credentials
         dockerImage = ''
     }
     agent any
@@ -11,10 +11,18 @@ pipeline {
                 git 'https://github.com/wiammiftah/tp4.git'
             }
         }
-        stage('Building image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                    // Utilisation des informations d'identification pour l'authentification Docker
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        // Connexion à Docker Hub
+                        sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                        // Construction de l'image Docker
+                        sh 'docker build -t wiammiftah/tp4:$BUILD_NUMBER .'
+                        // Déconnexion de Docker Hub
+                        sh 'docker logout'
+                    }
                 }
             }
         }
@@ -29,6 +37,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', registryCredential) {
+                        dockerImage = docker.image("${registry}:$BUILD_NUMBER")
                         dockerImage.push()
                     }
                 }
